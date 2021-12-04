@@ -1,9 +1,18 @@
 use std::fs;
+const BASE: i32 = 2;
 
 fn main() {
     let temp = fs::read_to_string("input.txt").unwrap();
     let input = temp.lines().collect::<Vec<&str>>();
     println!("part 1: {}", part_1(&input));
+}
+
+fn ones(num: i32) -> i32 {
+    let mut res = 0;
+    for i in 0..num {
+        res += BASE.pow(i as u32);
+    }
+    return res;
 }
 
 fn part_1(input: &Vec<&str>) -> i32 {
@@ -13,19 +22,21 @@ fn part_1(input: &Vec<&str>) -> i32 {
             count[i] += if c == '0' { -1 } else { 1 };
         }
     }
-    let gamma_str = count
+    let gamma: i32 = count
         .iter()
-        .map(|x| if x > &0 { '1' } else { '0' })
-        .collect::<Vec<char>>()
+        .enumerate()
+        .map(|(i, x)| {
+            if x > &0 {
+                BASE.pow((count.len() - i - 1) as u32)
+            } else {
+                0
+            }
+        })
+        .collect::<Vec<i32>>()
         .iter()
-        .collect::<String>();
-    let epsilon_str = count
-        .iter()
-        .map(|x| if x > &0 { '0' } else { '1' })
-        .collect::<Vec<char>>()
-        .iter()
-        .collect::<String>();
-    let epsilon = i32::from_str_radix(&epsilon_str, 2).unwrap();
-    let gamma = i32::from_str_radix(&gamma_str, 2).unwrap();
+        .sum();
+    let epsilon = !gamma & ones(count.len() as i32);
+    println!("epsilon: {}", epsilon);
+    println!("gamma: {}", gamma);
     return epsilon * gamma;
 }
