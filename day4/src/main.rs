@@ -20,13 +20,15 @@ fn main() {
                 .collect();
         })
         .collect();
-    println!("part 1: {}", part_1(numbers, boards));
+    let boards2 = boards.clone();
+    println!("part 1: {}", part_1(&numbers, boards));
+    println!("part 2: {}", part_2(&numbers, boards2));
 }
 
-fn part_1(numbers: Vec<i32>, mut boards: Vec<Board>) -> i32 {
+fn part_1(numbers: &Vec<i32>, mut boards: Vec<Board>) -> i32 {
     for n in numbers {
         for b in &mut boards {
-            *b = mark_board(b, n);
+            *b = mark_board(b, *n);
             if check_board(b) {
                 return b
                     .iter()
@@ -42,6 +44,39 @@ fn part_1(numbers: Vec<i32>, mut boards: Vec<Board>) -> i32 {
                     .iter()
                     .sum::<i32>()
                     * n;
+            }
+        }
+    }
+    return 0;
+}
+
+fn part_2(numbers: &Vec<i32>, mut boards: Vec<Board>) -> i32 {
+    let mut solved: Vec<usize> = Vec::new();
+    let len = boards.len();
+    for n in numbers {
+        for (i, b) in boards.iter_mut().enumerate() {
+            if solved.contains(&i) {
+                continue;
+            };
+            *b = mark_board(b, *n);
+            if check_board(b) {
+                solved.push(i);
+                if solved.len() == len {
+                    return b
+                        .iter()
+                        .map(|row| {
+                            return row
+                                .iter()
+                                .filter(|x| x >= &&0)
+                                .collect::<Vec<&i32>>()
+                                .into_iter()
+                                .sum();
+                        })
+                        .collect::<Vec<i32>>()
+                        .iter()
+                        .sum::<i32>()
+                        * n;
+                }
             }
         }
     }
@@ -73,6 +108,10 @@ fn mark_board(board: &Board, number: i32) -> Board {
                 .iter()
                 .map(|x| {
                     if x == &number {
+                        // Uh oh
+                        if x == &0 {
+                            return -100;
+                        }
                         return x * -1;
                     }
                     return *x;
