@@ -58,7 +58,7 @@ impl LineSegment {
             end: Point { x: x1, y: y1 },
         };
     }
-    fn points_covered(&self) -> Vec<Point> {
+    fn points_covered(&self, diagonal: bool) -> Vec<Point> {
         let Point { x: x1, y: y1 } = self.start;
         let Point { x: x2, y: y2 } = self.end;
         let mut points: Vec<Point> = Vec::new();
@@ -70,7 +70,7 @@ impl LineSegment {
             for i in x1..(x2 + 1) {
                 points.push(Point { x: i, y: y1 })
             }
-        } else {
+        } else if diagonal {
             // should always be positive according to the constructor
             let dx = x2 - x1;
             let dy = y2 - y1;
@@ -125,21 +125,26 @@ fn main() {
         })
         .collect();
 
-    println!(
-        "points covered for {:?}: \n{:?}",
-        lines[9],
-        lines[9].points_covered()
-    );
+    // println!(
+    //     "points covered for {:?}: \n{:?}",
+    //     lines[9],
+    //     lines[9].points_covered(true)
+    // );
 
-    println!("part 1: {}", part_1(lines));
+    println!("part 1: {}", part_1(&lines));
+    println!("part 2: {}", part_2(&lines));
 }
 
-fn part_1(lines: Vec<LineSegment>) -> i32 {
+fn part_1(lines: &Vec<LineSegment>) -> i32 {
     let mut map: HashMap<Point, i32> = HashMap::new();
+    let mut overlaps = 0;
     for l in lines {
-        let covered = l.points_covered();
+        let covered = l.points_covered(false);
         for point in covered.iter() {
             if map.contains_key(point) {
+                if map.get(point).unwrap() == &1 {
+                    overlaps += 1
+                }
                 *map.get_mut(point).unwrap() += 1;
             } else {
                 map.insert(point.clone(), 1);
@@ -147,11 +152,25 @@ fn part_1(lines: Vec<LineSegment>) -> i32 {
         }
     }
 
+    return overlaps;
+}
+
+fn part_2(lines: &Vec<LineSegment>) -> i32 {
+    let mut map: HashMap<Point, i32> = HashMap::new();
     let mut overlaps = 0;
-    for p in map.values() {
-        if p > &1 {
-            overlaps += 1;
+    for l in lines {
+        let covered = l.points_covered(true);
+        for point in covered.iter() {
+            if map.contains_key(point) {
+                if map.get(point).unwrap() == &1 {
+                    overlaps += 1
+                }
+                *map.get_mut(point).unwrap() += 1;
+            } else {
+                map.insert(point.clone(), 1);
+            }
         }
     }
+
     return overlaps;
 }
