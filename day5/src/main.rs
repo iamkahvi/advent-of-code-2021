@@ -47,24 +47,46 @@ impl LineSegment {
                 },
             };
         }
-        return LineSegment { start, end };
+        if x1 < x2 {
+            return LineSegment {
+                start: Point { x: x1, y: y1 },
+                end: Point { x: x2, y: y2 },
+            };
+        }
+        return LineSegment {
+            start: Point { x: x2, y: y2 },
+            end: Point { x: x1, y: y1 },
+        };
     }
     fn points_covered(&self) -> Vec<Point> {
         let Point { x: x1, y: y1 } = self.start;
         let Point { x: x2, y: y2 } = self.end;
         let mut points: Vec<Point> = Vec::new();
         if x1 == x2 {
-            for i in y1..y2 {
+            for i in y1..(y2 + 1) {
                 points.push(Point { x: x1, y: i })
             }
         } else if y1 == y2 {
-            for i in x1..x2 {
+            for i in x1..(x2 + 1) {
                 points.push(Point { x: i, y: y1 })
             }
         } else {
-            return points;
+            // should always be positive according to the constructor
+            let dx = x2 - x1;
+            let dy = y2 - y1;
+            if dx == dy.abs() {
+                let mut yi = y1;
+                for xi in x1..(x2 + 1) {
+                    if dy > 0 {
+                        points.push(Point { x: xi, y: yi });
+                        yi += 1;
+                    } else {
+                        points.push(Point { x: xi, y: yi });
+                        yi -= 1;
+                    }
+                }
+            }
         }
-        points.push(self.end.clone());
         return points;
     }
 }
@@ -102,6 +124,12 @@ fn main() {
             return LineSegment::new(points[0].clone(), points[1].clone());
         })
         .collect();
+
+    println!(
+        "points covered for {:?}: \n{:?}",
+        lines[9],
+        lines[9].points_covered()
+    );
 
     println!("part 1: {}", part_1(lines));
 }
