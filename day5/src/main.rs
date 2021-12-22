@@ -1,6 +1,8 @@
+use std::collections::HashMap;
 use std::fmt;
 use std::fs;
 
+#[derive(Eq, PartialEq, Hash)]
 struct Point {
     x: i32,
     y: i32,
@@ -19,53 +21,51 @@ struct LineSegment {
 
 impl LineSegment {
     fn new(start: Point, end: Point) -> LineSegment {
+        let Point { x: x1, y: y1 } = start;
+        let Point { x: x2, y: y2 } = end;
+        if x1 == x2 {
+            return LineSegment {
+                start: Point {
+                    x: x1,
+                    y: y1.min(y2),
+                },
+                end: Point {
+                    x: x1,
+                    y: y1.max(y2),
+                },
+            };
+        }
+        if y1 == y2 {
+            return LineSegment {
+                start: Point {
+                    x: x1.min(x2),
+                    y: y1,
+                },
+                end: Point {
+                    x: x1.max(x2),
+                    y: y1,
+                },
+            };
+        }
         return LineSegment { start, end };
     }
-    fn overlap(&self, l: &LineSegment) -> Vec<Point> {
-        return Vec::new();
-    }
-    fn points_covered(&self) -> Option<Vec<Point>> {
+    fn points_covered(&self) -> Vec<Point> {
         let Point { x: x1, y: y1 } = self.start;
         let Point { x: x2, y: y2 } = self.end;
+        let mut points: Vec<Point> = Vec::new();
         if x1 == x2 {
-            let mut v = Vec::new();
-            match (y1, y2) {
-                (y1, y2) if y1 < y2 => {
-                    for i in y1..(y2 + 1) {
-                        v.push(Point { x: x1, y: i });
-                    }
-                }
-                (y1, y2) if y1 > y2 => {
-                    for i in (y1..(y2 + 1)).rev() {
-                        v.push(Point { x: x1, y: i });
-                    }
-                }
-                (y1, _y2) => {
-                    v.push(Point { x: x1, y: y1 });
-                }
+            for i in y1..y2 {
+                points.push(Point { x: x1, y: i })
             }
-            return Some(v);
         } else if y1 == y2 {
-            let mut v = Vec::new();
-            match (x1, x2) {
-                (x1, x2) if x1 < x2 => {
-                    for i in x1..(x2 + 1) {
-                        v.push(Point { x: i, y: y1 });
-                    }
-                }
-                (x1, x2) if x1 > x2 => {
-                    for i in (x2..(x1 + 1)).rev() {
-                        v.push(Point { x: i, y: y1 });
-                    }
-                }
-                (x1, _x2) => {
-                    v.push(Point { x: x1, y: y1 });
-                }
+            for i in x1..x2 {
+                points.push(Point { x: i, y: y1 })
             }
-            return Some(v);
         } else {
-            return None;
+            return points;
         }
+        points.push(self.end.clone());
+        return points;
     }
 }
 
@@ -103,11 +103,27 @@ fn main() {
         })
         .collect();
 
-    println!("{:?}", lines);
+    println!("part 1: {}", part_1(lines));
+}
 
-    println!(
-        "points covered for {:?}: {:?}",
-        lines[2],
-        lines[2].points_covered()
-    )
+fn part_1(lines: Vec<LineSegment>) -> i32 {
+    let mut map: HashMap<Point, i32> = HashMap::new();
+    for l in lines {
+        let covered = l.points_covered();
+        for point in covered.iter() {
+            if map.contains_key(point) {
+                *map.get_mut(point).unwrap() += 1;
+            } else {
+                map.insert(point.clone(), 1);
+            }
+        }
+    }
+
+    let mut overlaps = 0;
+    for p in map.values() {
+        if p > &1 {
+            overlaps += 1;
+        }
+    }
+    return overlaps;
 }
