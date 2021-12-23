@@ -25,7 +25,7 @@ fn part_1(crabs: &Vec<i32>) -> i32 {
 }
 
 fn part_2(crabs: &Vec<i32>) -> i32 {
-    let mean = (crabs.iter().sum::<i32>() as f32 / crabs.len() as f32).ceil() as i32;
+    let mean = (crabs.iter().sum::<i32>() as f32 / crabs.len() as f32).floor() as i32;
     let mut fuel = 0;
     for c in crabs {
         let n = (c - mean).abs() as f32;
