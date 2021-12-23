@@ -1,4 +1,7 @@
+use std::collections::HashMap;
 use std::fs;
+
+const DAYS: i32 = 256;
 
 fn main() {
     let line: String = fs::read_to_string("input.txt").unwrap();
@@ -8,23 +11,13 @@ fn main() {
             return n.parse().unwrap();
         })
         .collect();
-    println!("part 1: {}", part_1(&fish));
-    let days = 256;
-    let mut sum = 0;
-    for f in fish {
-        sum += 1 + calc_fish(f, days);
-    }
-    println!("{}", sum);
-    // println!("{}", calc_fish(3, 18));
-    // println!("{}", calc_fish(4, 18));
+    // println!("part 1: {}", part_1(&fish, DAYS));
+    println!("part 2: {}", part_2(&fish, DAYS));
 }
 
-fn part_1(fish: &Vec<i32>) -> i128 {
+fn part_1(fish: &Vec<i32>, days: i32) -> i32 {
     let mut nfish = fish.clone();
-    for _ in 0..18 {
-        // println!("{:?}", nfish);
-        // println!("{:?}", nfish.iter().sum::<i32>());
-        println!("{:?}", nfish.len());
+    for _ in 0..days {
         let mut to_add: Vec<i32> = Vec::new();
         nfish = nfish
             .into_iter()
@@ -36,26 +29,42 @@ fn part_1(fish: &Vec<i32>) -> i128 {
                 return f - 1;
             })
             .collect();
-        // println!("{:?}\n", to_add.len());
         nfish.append(&mut to_add);
     }
-    return nfish.len() as i128;
+    return nfish.len() as i32;
 }
 
-// (3,18) -> 3
-// (18 + 1) - (3 + 2) = 14 -> 14 - 7 = 7 -> 7 - 7 = 0
-//
-fn calc_fish(start: i32, days: i32) -> i32 {
+fn part_2(fish: &Vec<i32>, days: i32) -> i128 {
+    let mut sum = 0;
+    let mut map: HashMap<(i32, i128), i128> = HashMap::new();
+    for f in fish {
+        if map.contains_key(&(*f, days as i128)) {
+            sum += 1 + map.get(&(*f, days as i128)).unwrap();
+        } else {
+            let res = calc_fish(*f, days as i128, &mut map);
+            map.insert((*f, days as i128), res);
+            sum += 1 + res;
+        }
+    }
+    return sum;
+}
+
+fn calc_fish(start: i32, days: i128, map: &mut HashMap<(i32, i128), i128>) -> i128 {
     let mut x = start + 2;
     let mut spent = days + 1;
-    let mut added = 0;
+    let mut added: i128 = 0;
     loop {
-        spent -= x;
+        spent -= x as i128;
         if spent < 0 {
             break;
         }
-        // println!("calc_fish({},{})", 8, spent);
-        added += 1 + calc_fish(8, spent);
+        if map.contains_key(&(8, spent)) {
+            added += 1 + map.get(&(8, spent)).unwrap();
+        } else {
+            let res = calc_fish(8, spent, map);
+            map.insert((8, spent), res);
+            added += 1 + res;
+        }
         x = 7;
     }
     return added;
