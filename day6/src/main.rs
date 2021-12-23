@@ -11,7 +11,7 @@ fn main() {
             return n.parse().unwrap();
         })
         .collect();
-    // println!("part 1: {}", part_1(&fish, DAYS));
+    println!("part 1: {}", part_1(&fish, DAYS));
     println!("part 2: {}", part_2(&fish, DAYS));
 }
 
